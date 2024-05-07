@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import MoviesList from "./components/MoviesList";
 import "./App.css";
+import Loading from '../src/assets/loading2.gif'
+
 
 const dummyMovies = [
   {
@@ -18,8 +20,11 @@ const dummyMovies = [
 ];
 
 function App() {
+  const[isloading, setisloading]= useState(false)
   const [deatils, setdetails] = useState([]);
+
   async function fetchMoviehandler() {
+    setisloading(true);
     const response = await fetch("https://swapi.dev/api/films/");
     const data = await response.json();
     const transformation = data.results.map((movieData) => {
@@ -32,15 +37,18 @@ function App() {
     });
 
     setdetails(transformation);
+    setisloading(false)
   }
 
   return (
     <React.Fragment>
       <section>
-        <button onClick={fetchMoviehandler}>Fetch Movies</button>
+        <button onClick={fetchMoviehandler} >Fetch Movies</button>
       </section>
       <section>
-        <MoviesList movies={deatils} />
+        {!isloading && deatils.length > 0 && <MoviesList movies={deatils} />}
+        {!isloading && deatils.length=== 0 && <p>Found no movie details.</p>}
+        {isloading &&  <img src={Loading}></img>}
       </section>
     </React.Fragment>
   );
