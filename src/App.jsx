@@ -71,9 +71,25 @@ function App() {
   //     cancelRetry();
   //   };
   // }, []);
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+  }
 
   return (
     <React.Fragment>
+      <section>
+        <form>
+        <label htmlFor="title">Title</label>
+        <input type="text" id="title"/> <br/>
+        <label htmlFor="openingText">Opening Text</label>
+        <textarea rows='5' id="openingText"/><br/>
+        <label htmlFor="date">Release Date</label>
+        <input type="text" id="date"/><br/>
+        <button style={{marginLeft: '210px'}}type="submit" onClick={submitHandler}>Add Movie</button>
+        </form>
+
+      </section>
       <section>
         <button onClick={fetchMoviehandler}>Fetch Movies</button>
       </section>

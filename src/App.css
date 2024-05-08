@@ -16,6 +16,7 @@ button {
   color: white;
   padding: 0.75rem 2rem;
   border-radius: 20px;
+  
 }
 
 button:focus {
@@ -27,3 +28,26 @@ button:active {
   background-color: #460897;
   border-color: #460897;
 }
+
+form {
+  text-align: left;
+  /* display: flexbox; */
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+label{
+  font-weight: bold;
+  font-size: large;
+  width: 100%;
+}
+
+input, textarea {
+  width: 100%;
+  border-radius: 20px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border-color: lightgray;
+  padding: 10px;
+}
+
