@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState , useCallback} from "react";
 import MoviesList from "./components/MoviesList";
 import "./App.css";
 import Loading from "../src/assets/loading2.gif";
@@ -22,14 +22,16 @@ function App() {
   const [isloading, setisloading] = useState(false);
   const [deatils, setdetails] = useState([]);
   const [error, setError] = useState(null);
-  const [startRunning, setStartrunning] = useState(false);
+  const [retryInterval, setRetryInterval] = useState(null);
 
   
-  async function fetchMoviehandler() {
+
+   
+  const fetchMoviehandler= useCallback(async()=> {
     setisloading(true);
     setError(null);
     try {
-      const response = await fetch("https://swapi.dev/api/film/");
+      const response = await fetch("https://swapi.dev/api/films/");
       if (!response.ok) {
         throw new Error("Something went wrong... ");
       }
@@ -46,9 +48,29 @@ function App() {
       setdetails(transformation);
     } catch (err) {
       setError(err.message);
+      setRetryInterval(setInterval(fetch("https://swapi.dev/api/film/"), 2000));
     }
     setisloading(false);
-  }
+  }, [])
+
+  useEffect(()=>{
+    fetchMoviehandler()
+  }, [fetchMoviehandler])
+
+  const cancelRetry = () => {
+    if (retryInterval) {
+      console.log('cleaned interval')
+      clearInterval(retryInterval);
+      setRetryInterval(null);
+    }
+  };
+
+  // useEffect(() => {
+  //   // Cleanup interval on component unmount
+  //   return () => {
+  //     cancelRetry();
+  //   };
+  // }, []);
 
   return (
     <React.Fragment>
@@ -67,9 +89,11 @@ function App() {
           <p>
             {error}
             <b>Retrying</b>
-            <button>Cancel</button>
+            <button onClick={cancelRetry}>Cancel</button>
           </p>
         )}
+
+
       </section>
     </React.Fragment>
   );
