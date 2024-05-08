@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MoviesList from "./components/MoviesList";
 import "./App.css";
-import Loading from '../src/assets/loading2.gif'
-
+import Loading from "../src/assets/loading2.gif";
 
 const dummyMovies = [
   {
@@ -20,35 +19,57 @@ const dummyMovies = [
 ];
 
 function App() {
-  const[isloading, setisloading]= useState(false)
+  const [isloading, setisloading] = useState(false);
   const [deatils, setdetails] = useState([]);
+  const [error, setError] = useState(null);
+  const [startRunning, setStartrunning] = useState(false);
 
+  
   async function fetchMoviehandler() {
     setisloading(true);
-    const response = await fetch("https://swapi.dev/api/films/");
-    const data = await response.json();
-    const transformation = data.results.map((movieData) => {
-      return {
-        id: movieData.episode_id,
-        title: movieData.title,
-        openingText: movieData.opening_crawl,
-        releaseDate: movieData.release_date,
-      };
-    });
+    setError(null);
+    try {
+      const response = await fetch("https://swapi.dev/api/film/");
+      if (!response.ok) {
+        throw new Error("Something went wrong... ");
+      }
 
-    setdetails(transformation);
-    setisloading(false)
+      const data = await response.json();
+      const transformation = data.results.map((movieData) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        };
+      });
+      setdetails(transformation);
+    } catch (err) {
+      setError(err.message);
+    }
+    setisloading(false);
   }
 
   return (
     <React.Fragment>
       <section>
-        <button onClick={fetchMoviehandler} >Fetch Movies</button>
+        <button onClick={fetchMoviehandler}>Fetch Movies</button>
       </section>
+
       <section>
         {!isloading && deatils.length > 0 && <MoviesList movies={deatils} />}
-        {!isloading && deatils.length=== 0 && <p>Found no movie details.</p>}
-        {isloading &&  <img src={Loading}></img>}
+        {!isloading && deatils.length === 0 && !error && (
+          <p>Found no movie details.</p>
+        )}
+        
+        {isloading && <img src={Loading}></img>}
+        {!isloading && error && (
+          <p>
+            {error}
+            <b>Retrying</b>
+            <button>Cancel</button>
+          </p>
+        )}
       </section>
     </React.Fragment>
   );
