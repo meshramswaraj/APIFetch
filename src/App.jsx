@@ -1,4 +1,4 @@
-import React, { useEffect, useState , useCallback} from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import MoviesList from "./components/MoviesList";
 import "./App.css";
 import Loading from "../src/assets/loading2.gif";
@@ -23,43 +23,87 @@ function App() {
   const [deatils, setdetails] = useState([]);
   const [error, setError] = useState(null);
   const [retryInterval, setRetryInterval] = useState(null);
+  const newTitle = useRef();
+  const newText = useRef();
+  const newDate = useRef();
+  const [newDetails, setNewdetails] = useState([]);
 
-  
+  const submitHandler = (e) => {
+    e.preventDefault();
 
-   
-  const fetchMoviehandler= useCallback(async()=> {
+    const obj = {
+      title: newTitle.current.value,
+      openingText: newText.current.value,
+      releaseDate: newDate.current.value,
+    };
+
+    setNewdetails(obj);
+    submitMovieHandler(obj)
+  };
+
+  async function submitMovieHandler (e) {
+    const response = await fetch("https://react-http-a9f15-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json",{
+      method: 'POST',
+      body: JSON.stringify(e),
+      headers: {
+        'Content-Tyype': 'application/json'
+      }
+  });
+
+    const data = await response.json()
+
+    // console.log(data)
+
+
+  }
+
+
+  const fetchMoviehandler = useCallback(async () => {
     setisloading(true);
     setError(null);
     try {
-      const response = await fetch("https://swapi.dev/api/films/");
+      const response = await fetch(
+        "https://react-http-a9f15-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json"
+      );
       if (!response.ok) {
         throw new Error("Something went wrong... ");
       }
 
       const data = await response.json();
-      const transformation = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setdetails(transformation);
+      
+      const  loadedMovies = [];
+      for( const key in data){
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText:data[key].openingText,
+          releaseDate: data[key].releaseDate
+        })
+      }
+
+      // const transformation = data.results.map((movieData) => {
+      //   return {
+      //     id: movieData.episode_id,
+      //     title: movieData.title,
+      //     openingText: movieData.opening_crawl,
+      //     releaseDate: movieData.release_date,
+      //   };
+      // });
+      setdetails(loadedMovies);
     } catch (err) {
       setError(err.message);
-      setRetryInterval(setInterval(fetch("https://swapi.dev/api/film/"), 2000));
+      // setRetryInterval(setInterval(fetch("https://swapi.dev/api/film/"), 2000));
     }
     setisloading(false);
-  }, [])
+  }, []);
 
-  useEffect(()=>{
-    fetchMoviehandler()
-  }, [fetchMoviehandler])
+  useEffect(() => {
+    fetchMoviehandler();
+  }, [fetchMoviehandler]);
 
   const cancelRetry = () => {
     if (retryInterval) {
-      console.log('cleaned interval')
+      console.log("cleaned interval");
       clearInterval(retryInterval);
       setRetryInterval(null);
     }
@@ -71,24 +115,27 @@ function App() {
   //     cancelRetry();
   //   };
   // }, []);
-  const submitHandler = (e) => {
-    e.preventDefault();
-
-  }
 
   return (
     <React.Fragment>
       <section>
         <form>
-        <label htmlFor="title">Title</label>
-        <input type="text" id="title"/> <br/>
-        <label htmlFor="openingText">Opening Text</label>
-        <textarea rows='5' id="openingText"/><br/>
-        <label htmlFor="date">Release Date</label>
-        <input type="text" id="date"/><br/>
-        <button style={{marginLeft: '210px'}}type="submit" onClick={submitHandler}>Add Movie</button>
+          <label htmlFor="title">Title</label>
+          <input type="text" id="title" ref={newTitle} /> <br />
+          <label htmlFor="openingText">Opening Text</label>
+          <textarea rows="5" id="openingText" ref={newText} />
+          <br />
+          <label htmlFor="date">Release Date</label>
+          <input type="text" id="date" ref={newDate} />
+          <br />
+          <button
+            style={{ marginLeft: "210px" }}
+            type="submit"
+            onClick={submitHandler}
+          >
+            Add Movie
+          </button>
         </form>
-
       </section>
       <section>
         <button onClick={fetchMoviehandler}>Fetch Movies</button>
@@ -99,7 +146,7 @@ function App() {
         {!isloading && deatils.length === 0 && !error && (
           <p>Found no movie details.</p>
         )}
-        
+
         {isloading && <img src={Loading}></img>}
         {!isloading && error && (
           <p>
@@ -108,8 +155,6 @@ function App() {
             <button onClick={cancelRetry}>Cancel</button>
           </p>
         )}
-
-
       </section>
     </React.Fragment>
   );
