@@ -53,7 +53,7 @@ function App() {
     const data = await response.json()
 
     // console.log(data)
-
+  fetchMoviehandler()
 
   }
 
@@ -70,7 +70,7 @@ function App() {
       }
 
       const data = await response.json();
-      
+
       const  loadedMovies = [];
       for( const key in data){
         loadedMovies.push({
